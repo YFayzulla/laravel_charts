@@ -23,11 +23,18 @@
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
         chart.draw(data, options);
+
       }
     </script>
   </head>
   <body>
     <div id="piechart" style="width: 900px; height: 500px;"></div>
   </body>
+
+
+
+
+
+
 </html>
 
