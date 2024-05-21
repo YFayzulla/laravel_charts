@@ -8,12 +8,9 @@
       function drawChart() {
 
         var data = google.visualization.arrayToDataTable([
-          ['Task', 'Hours per Day'],
-          ['Eat',      50],
-          ['Watch TV', 21],
-          ['Work',     10],
-          ['Commute',  5],
-          ['Sleep',    100]
+            ['Tasks ' , 'hour pear day'],
+
+            <?php  echo $arr  ?>
         ]);
 
         var options = {
@@ -30,11 +27,5 @@
   <body>
     <div id="piechart" style="width: 900px; height: 500px;"></div>
   </body>
-
-
-
-
-
-
 </html>
 
