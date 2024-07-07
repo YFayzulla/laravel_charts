@@ -82,7 +82,6 @@
                 type: 'GET',
                 url: '/posts/fetchPosts',
                 success: function(response) {
-                    console.log(response); // Add this to verify the response
                     $('#postsList').empty();
                     if (response.length === 0) {
                         $('#postsList').append('<tr><td colspan="4" class="text-center">No posts available</td></tr>');
@@ -129,6 +128,7 @@
                         $('#postForm')[0].reset();
                         $('input[name="post_id"]').val('');
                         $('button[type="submit"]').text('Submit');
+                        $('#postModalLabel').text('Add New Post'); // Reset modal title for creating
                     },
                     error: function(error) {
                         console.log('Error updating post:', error);
@@ -178,12 +178,14 @@
             $('#body').val(postBody);
             $('input[name="post_id"]').val(postId);
             $('button[type="submit"]').text('Update');
+            $('#postModalLabel').text('Edit Post'); // Change modal title for editing
             $('#postModal').modal('show');
         });
 
         // Open Modal for Creating a New Post
         $('#postModal').on('show.bs.modal', function () {
             $('button[type="submit"]').text('Submit');
+            $('#postModalLabel').text('Add New Post'); // Reset modal title
             $('input[name="post_id"]').val('');
             $('#postForm')[0].reset();
         });
