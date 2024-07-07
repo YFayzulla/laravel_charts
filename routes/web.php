@@ -11,8 +11,12 @@ Route::get('/', function () {
 
 Route::get('/dashboard',[ Website ::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::resource('posts', PostController::class);
 
+Route::get('/posts', [PostController::class, 'index']);
+Route::get('/posts/fetchPosts', [PostController::class, 'fetchPosts']); // Make sure this route exists
+Route::post('/posts', [PostController::class, 'store']);
+Route::put('/posts/{id}', [PostController::class, 'update']);
+Route::delete('/posts/{id}', [PostController::class, 'destroy']);
 
 
 Route::middleware('auth')->group(function () {

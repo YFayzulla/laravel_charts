@@ -1,27 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Laravel jQuery CRUD</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Laravel jQuery CRUD</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .post-card {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
+<div class="container mt-4">
     <h2>Laravel jQuery CRUD</h2>
-    <form id="postForm">
-        <div class="form-group">
-            <label>Title:</label>
-            <input type="text" class="form-control" name="title" required>
-        </div>
-        <div class="form-group">
-            <label>Body:</label>
-            <textarea class="form-control" name="body" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-    <div id="postsList"></div>
+
+    <!-- Button to Open the Modal -->
+    <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#postModal">Add New Post</button>
+
+    <!-- Table for Displaying Posts -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Body</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="postsList">
+            <!-- Posts will be inserted here by jQuery -->
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="postModal" tabindex="-1" role="dialog" aria-labelledby="postModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="postModalLabel">Add New Post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="postForm">
+                    <input type="hidden" name="post_id">
+                    <div class="form-group">
+                        <label for="title">Title:</label>
+                        <input type="text" id="title" class="form-control" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="body">Body:</label>
+                        <textarea id="body" class="form-control" name="body" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     $(document).ready(function() {
         // AJAX Setup
@@ -32,53 +77,84 @@
         });
 
         // Fetch Posts
+        function fetchPosts() {
+            $.ajax({
+                type: 'GET',
+                url: '/posts/fetchPosts',
+                success: function(response) {
+                    console.log(response); // Add this to verify the response
+                    $('#postsList').empty();
+                    if (response.length === 0) {
+                        $('#postsList').append('<tr><td colspan="4" class="text-center">No posts available</td></tr>');
+                    } else {
+                        response.forEach(function(post) {
+                            $('#postsList').append(
+                                `<tr data-id="${post.id}">
+                                        <td>${post.id}</td>
+                                        <td>${post.title}</td>
+                                        <td>${post.body}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm edit-post">Edit</button>
+                                            <button class="btn btn-danger btn-sm delete-post">Delete</button>
+                                        </td>
+                                    </tr>`
+                            );
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.log('Error fetching posts:', error);
+                }
+            });
+        }
+
+        // Call fetchPosts on page load
         fetchPosts();
 
         // Submit Form
         $('#postForm').on('submit', function(e) {
             e.preventDefault();
             let formData = $(this).serialize();
-            $.ajax({
-                type: 'POST',
-                url: '/posts',
-                data: formData,
-                success: function(response) {
-                    fetchPosts();
-                    $('#postForm')[0].reset();
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
-        });
+            let postId = $('input[name="post_id"]').val();
 
-        // Fetch Posts Function
-        function fetchPosts() {
-            $.ajax({
-                type: 'GET',
-                url: '/posts/fetchPosts',
-                success: function(response) {
-                    $('#postsList').empty();
-                    response.forEach(function(post) {
-                        $('#postsList').append(
-                            `<div class="post" data-id="${post.id}">
-                                    <h4>${post.title}</h4>
-                                    <p>${post.body}</p>
-                                    <button class="btn btn-primary edit-post">Edit</button>
-                                    <button class="btn btn-danger delete-post">Delete</button>
-                                </div>`
-                        );
-                    });
-                },
-                error: function(error) {
-                    console.log(error);
-                }
-            });
-        }
+            if (postId) {
+                // Update Post
+                $.ajax({
+                    type: 'PUT',
+                    url: `/posts/${postId}`,
+                    data: formData,
+                    success: function(response) {
+                        fetchPosts();
+                        $('#postModal').modal('hide');
+                        $('#postForm')[0].reset();
+                        $('input[name="post_id"]').val('');
+                        $('button[type="submit"]').text('Submit');
+                    },
+                    error: function(error) {
+                        console.log('Error updating post:', error);
+                    }
+                });
+            } else {
+                // Create Post
+                $.ajax({
+                    type: 'POST',
+                    url: '/posts',
+                    data: formData,
+                    success: function(response) {
+                        fetchPosts();
+                        $('#postModal').modal('hide');
+                        $('#postForm')[0].reset();
+                    },
+                    error: function(error) {
+                        console.log('Error creating post:', error);
+                    }
+                });
+            }
+        });
 
         // Delete Post
         $(document).on('click', '.delete-post', function() {
-            let postId = $(this).parent().data('id');
+            let postId = $(this).closest('tr').data('id');
             $.ajax({
                 type: 'DELETE',
                 url: `/posts/${postId}`,
@@ -86,45 +162,30 @@
                     fetchPosts();
                 },
                 error: function(error) {
-                    console.log(error);
+                    console.log('Error deleting post:', error);
                 }
             });
         });
 
         // Edit Post
         $(document).on('click', '.edit-post', function() {
-            let post = $(this).parent();
+            let post = $(this).closest('tr');
             let postId = post.data('id');
-            let postTitle = post.find('h4').text();
-            let postBody = post.find('p').text();
+            let postTitle = post.find('td:nth-child(2)').text();
+            let postBody = post.find('td:nth-child(3)').text();
 
-            $('#postForm').find('input[name="title"]').val(postTitle);
-            $('#postForm').find('textarea[name="body"]').val(postBody);
-            $('#postForm').append(`<input type="hidden" name="post_id" value="${postId}">`);
-            $('#postForm').find('button[type="submit"]').text('Update');
+            $('#title').val(postTitle);
+            $('#body').val(postBody);
+            $('input[name="post_id"]').val(postId);
+            $('button[type="submit"]').text('Update');
+            $('#postModal').modal('show');
         });
 
-        // Update Post
-        $('#postForm').on('submit', function(e) {
-            e.preventDefault();
-            let postId = $(this).find('input[name="post_id"]').val();
-            if (postId) {
-                let formData = $(this).serialize();
-                $.ajax({
-                    type: 'PUT',
-                    url: `/posts/${postId}`,
-                    data: formData,
-                    success: function(response) {
-                        fetchPosts();
-                        $('#postForm')[0].reset();
-                        $('#postForm').find('input[name="post_id"]').remove();
-                        $('#postForm').find('button[type="submit"]').text('Submit');
-                    },
-                    error: function(error) {
-                        console.log(error);
-                    }
-                });
-            }
+        // Open Modal for Creating a New Post
+        $('#postModal').on('show.bs.modal', function () {
+            $('button[type="submit"]').text('Submit');
+            $('input[name="post_id"]').val('');
+            $('#postForm')[0].reset();
         });
     });
 </script>
