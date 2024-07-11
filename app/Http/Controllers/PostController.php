@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -14,54 +15,78 @@ class PostController extends Controller
 
     public function fetchPosts()
     {
-        // Ensure there is data in the database
         $posts = Post::all();
-
-        // Check if there are any posts
-        if ($posts->isEmpty()) {
-            return response()->json([], 200); // Return an empty array if no posts are found
-        }
-
-        // Return the posts as a JSON response
         return response()->json($posts);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|max:255',
-            'body' => 'required',
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+            'file' => 'nullable|file|mimes:jpg,png,jpeg,gif'
         ]);
 
-        $post = Post::updateOrCreate(
-            ['id' => $request->post_id],
-            ['title' => $request->title, 'body' => $request->body]
-        );
+        $imagePath = null;
+        if ($request->hasFile('file')) {
+            $imagePath = $request->file('file')->store('images', 'public');
 
-        return response()->json($post);
-    }
 
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'title' => 'required|max:255',
-            'body' => 'required',
-        ]);
-
-        $post = Post::find($id);
-
-        if (!$post) {
-            return response()->json(['message' => 'Post not found'], 404);
+            $imagePath='salom';
         }
 
-        $post->update($request->all());
+
+        $post = Post::create([
+            'title' => $validatedData['title'],
+            'body' => $validatedData['body'],
+            'image_path' => $imagePath ?? 'yoq' ,
+        ]);
+
         return response()->json($post);
     }
 
-
-    public function destroy($id)
+    // Update an existing post
+    public function update(Request $request, $id)
     {
-        Post::destroy($id);
-        return response()->json(['message' => 'Post deleted successfully']);
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'body' => 'required|string',
+            'file' => 'nullable|file|mimes:jpg,png,jpeg,gif|max:2048'
+        ]);
+
+        $post = Post::findOrFail($id);
+
+        $imagePath = $post->image_path;
+        if ($request->hasFile('file')) {
+            // Delete old image if it exists
+            if ($imagePath) {
+                Storage::disk('public')->delete($imagePath);
+            }
+            // Store the new image and update the path
+            $imagePath = $request->file('file')->store('images', 'public');
+        }
+
+        $post->update([
+            'title' => $validatedData['title'],
+            'body' => $validatedData['body'],
+            'image_path' => $imagePath,
+        ]);
+
+        return response()->json($post);
+    }
+    public function destroy(Post $post)
+    {
+        if ($post->file_path) {
+            Storage::disk('public')->delete($post->file_path);
+        }
+
+        $post->delete();
+
+        return response()->json(['message' => 'Post deleted successfully.']);
+    }
+
+    public function show(Post $post)
+    {
+        return response()->json($post);
     }
 }

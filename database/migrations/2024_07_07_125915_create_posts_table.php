@@ -12,6 +12,7 @@ class CreatePostsTable extends Migration
             $table->id();
             $table->string('title');
             $table->text('body');
+            $table->string('file_path')->nullable();
             $table->timestamps();
         });
     }
