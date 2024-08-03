@@ -64,7 +64,7 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // AJAX Setup
         $.ajaxSetup({
             headers: {
@@ -77,12 +77,12 @@
             $.ajax({
                 type: 'GET',
                 url: '/posts/fetchPosts',
-                success: function(response) {
+                success: function (response) {
                     $('#postsList').empty();
                     if (response.length === 0) {
                         $('#postsList').append('<tr><td colspan="5" class="text-center">No posts available</td></tr>');
                     } else {
-                        response.forEach(function(post) {
+                        response.forEach(function (post) {
                             $('#postsList').append(
                                 `<tr data-id="${post.id}">
                                         <td>${post.id}</td>
@@ -98,7 +98,7 @@
                         });
                     }
                 },
-                error: function(error) {
+                error: function (error) {
                     console.log('Error fetching posts:', error);
                 }
             });
@@ -108,7 +108,7 @@
         fetchPosts();
 
         // Submit Form
-        $('#postForm').on('submit', function(e) {
+        $('#postForm').on('submit', function (e) {
             e.preventDefault();
             let formData = new FormData(this);  // Create FormData object to handle file uploads
             let postId = $('input[name="post_id"]').val();
@@ -121,7 +121,7 @@
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(response) {
+                    success: function (response) {
                         fetchPosts();
                         $('#postModal').modal('hide');
                         $('#postForm')[0].reset();
@@ -129,7 +129,7 @@
                         $('button[type="submit"]').text('Submit');
                         $('#postModalLabel').text('Add New Post');  // Reset modal title for creating
                     },
-                    error: function(error) {
+                    error: function (error) {
                         console.log('Error updating post:', error);
                     }
                 });
@@ -141,12 +141,12 @@
                     data: formData,
                     contentType: false,
                     processData: false,
-                    success: function(response) {
+                    success: function (response) {
                         fetchPosts();
                         $('#postModal').modal('hide');
                         $('#postForm')[0].reset();
                     },
-                    error: function(error) {
+                    error: function (error) {
                         console.log('Error creating post:', error);
                     }
                 });
@@ -154,12 +154,12 @@
         });
 
         // Edit Post
-        $(document).on('click', '.edit-post', function() {
+        $(document).on('click', '.edit-post', function () {
             let postId = $(this).closest('tr').data('id');
             $.ajax({
                 type: 'GET',
                 url: `/posts/${postId}`,
-                success: function(response) {
+                success: function (response) {
                     $('#title').val(response.title);
                     $('#body').val(response.body);
                     $('input[name="post_id"]').val(response.id);
@@ -167,27 +167,25 @@
                     $('#postModalLabel').text('Edit Post');  // Change modal title for editing
                     $('#postModal').modal('show');
                 },
-                error: function(error) {
+                error: function (error) {
                     console.log('Error fetching post details:', error);
                 }
             });
         });
 
         // Delete Post
-        $(document).on('click', '.delete-post', function() {
+        $(document).on('click', '.delete-post', function () {
             let postId = $(this).closest('tr').data('id');
-            if (confirm('Are you sure you want to delete this post?')) {
-                $.ajax({
-                    type: 'DELETE',
-                    url: `/posts/${postId}`,
-                    success: function(response) {
-                        fetchPosts();
-                    },
-                    error: function(error) {
-                        console.log('Error deleting post:', error);
-                    }
-                });
-            }
+            $.ajax({
+                type: 'DELETE',
+                url: `/posts/${postId}`,
+                success: function (response) {
+                    fetchPosts();
+                },
+                error: function (error) {
+                    console.log('Error deleting post:', error);
+                }
+            });
         });
     });
 </script>
