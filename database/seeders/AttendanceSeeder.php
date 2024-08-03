@@ -20,7 +20,7 @@ class AttendanceSeeder extends Seeder
             ['name' => 'Person3', 'date' => Carbon::parse('2024-12-30')],
             ['name' => 'Person4', 'date' => Carbon::parse('2024-12-07')],
             ['name' => 'Person4', 'date' => Carbon::parse('2024-12-08')],
-            ['name' => 'Person5', 'date' => Carbon::parse('2024-12-31')],
+            ['name' => 'Person5', 'date' => Carbon::parse('2024-12-09')],
             ['name' => 'Person5', 'date' => Carbon::parse('2024-12-10')],
         ];
 

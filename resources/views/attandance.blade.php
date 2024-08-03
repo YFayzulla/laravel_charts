@@ -10,7 +10,7 @@
 <body>
 <div class="container mt-5">
     <h2 class="text-center">December 2024</h2>
-    <table class="table table-bordered text-center">
+    <table class="table table-responsive table-bordered text-center">
         <thead>
         <tr>
             <th>Name</th>
